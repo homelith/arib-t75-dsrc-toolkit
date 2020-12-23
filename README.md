@@ -25,3 +25,4 @@ Toolkit for capturing & decoding 5.8GHz DSRC (Dedicated Short-Range Communicatio
 
 - interpretive articles (in Japanese)
   + https://qiita.com/homelith/items/9acc6e307f33e73d676c
+  + https://qiita.com/chibiegg/items/35f60ee8d4551905f603
