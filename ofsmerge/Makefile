@@ -2,8 +2,8 @@
 # Makefile for go project
 ################################################################################
 
-TARGET   := mdcdscr
-SRCS     := mdcdscr.go
+TARGET   := ofsmerge
+SRCS     := ofsmerge.go
 
 .PHONY: default run
 
@@ -12,8 +12,9 @@ SRCS     := mdcdscr.go
 default : run
 
 run : $(TARGET)
-	@if [ ! -e "input.pcap" ] ; then echo "error : input.pcap not found" ; exit 1 ; fi
-	./$(TARGET) input.pcap output.pcap | tee dscr.log
+	@if [ ! -e "downlink.pcap" ] ; then echo "error : downlink.pcap not found" ; exit 1 ; fi
+	@if [ ! -e "uplink.pcap" ] ; then echo "error : uplink.pcap not found" ; exit 1 ; fi
+	./$(MERGE_TGT) -o 0 downlink.pcap uplink.pcap output.pcap
 
 $(TARGET) : $(SRCS)
 	go mod tidy
@@ -22,4 +23,4 @@ $(TARGET) : $(SRCS)
 	chmod +x $@
 
 clean:
-	rm -f go.sum dscr.log $(TARGET)
+	rm -f go.sum $(TARGET)
