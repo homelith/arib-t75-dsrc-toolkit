@@ -13,7 +13,7 @@ default : test
 
 test : $(TARGET)
 	@if [ ! -e "input.bin" ] ; then echo "error : input.bin not found" ; exit 1 ; fi
-	./$(TARGET) -w test.pcap < input.bin
+	./$(TARGET) -s 20M -d +5M:upper.pcap -d -5M:lower.pcap < input.bin
 
 $(TARGET) : $(SRCS)
 	go mod tidy
@@ -22,4 +22,4 @@ $(TARGET) : $(SRCS)
 	chmod +x $@
 
 clean:
-	rm -f go.sum test.pcap $(TARGET)
+	rm -f go.sum upper.pcap lower.pcap $(TARGET)

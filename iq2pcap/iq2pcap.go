@@ -35,9 +35,11 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 
+	"github.com/alecthomas/units"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcapgo"
 )
@@ -156,30 +158,83 @@ func c8Sink(wg *sync.WaitGroup, c8ChanIn chan []Complex8) {
 	}()
 }
 
+type strFlagMulti []string
+
+func (v *strFlagMulti) String() string {
+	return ""
+}
+
+func (s *strFlagMulti) Set(v string) error {
+	*s = append(*s, v)
+	return nil
+}
+
 func main() {
 	var err error
 
 	// parse args
-	strPcap := flag.String("w", "", "output pcap filename")
+	detectorStrAry := strFlagMulti{}
+	flag.Var(&detectorStrAry, "d", "detector params (e.g. '-d +5M:plus_5M.pcap -d -5M:minus_5M.pcap')")
+	sampleRateStr := flag.String("s", "20M", "sampling rate (e.g. '-s 20M') (default: 20M)")
 	flag.Parse()
 
-	// show settings
-	log.Print("#### iq2pcap ####\n")
+	// parse sampling rate
+	unitMap := units.MakeUnitMap("", "", 1000)
+	sampleRate, err := units.ParseUnit(*sampleRateStr, unitMap)
+	if err != nil {
+		log.Fatalf("main : error on parsing '-s %s' as sampling rate\n", *sampleRateStr)
+	}
+	log.Printf("main : sampling rate set to %d Hz\n", sampleRate)
 
-	// open output pcap if specified
-	var hPcap *os.File
-	var writer *pcapgo.Writer
-	if *strPcap != "" {
-		hPcap, err = os.Create(*strPcap)
-		if err != nil {
-			log.Fatal(err)
+	// parse detector params
+	type detectorParam struct {
+		detectRate int64
+		handlePcap *os.File
+		writerPcap *pcapgo.Writer
+	}
+	detectorParamAry := []detectorParam{}
+	for idx, str := range detectorStrAry {
+		// extract colon-seperated substring
+		param := detectorParam{}
+		subStrAry := strings.Split(str, ":")
+		if len(subStrAry) != 2 {
+			log.Fatalf("main : error on break '-s %s' into two colon-seperated subparams\n", str)
 		}
-		defer hPcap.Close()
 
-		writer = pcapgo.NewWriter(hPcap)
+		// parse detection rate
+		rate, err := units.ParseUnit(subStrAry[0], unitMap)
+		if err != nil {
+			log.Fatalf("main : error on parsing '-s %s' detector rate\n", str)
+		}
+		param.detectRate = rate
+
+		// open pcap file
+		handle, err := os.Create(subStrAry[1])
+		if err != nil {
+			log.Fatalf("main : error opening pcapfile (%v)\n", err)
+		}
+		param.handlePcap = handle
+		writer := pcapgo.NewWriter(handle)
+		param.writerPcap = writer
+
+		// register struct
+		detectorParamAry = append(detectorParamAry, param)
+		log.Printf("main : %d th detector will focus on offset %d Hz\n", idx, param.detectRate)
+		log.Printf("main : %d th detector output is written on %s\n", idx, subStrAry[1])
+
 		// write pcap header
 		writer.WriteFileHeader(65536, layers.LinkTypeNull)
 	}
+
+	// register pcapfile cleanup process
+	defer func() {
+		for _, param := range detectorParamAry {
+			param.handlePcap.Close()
+		}
+	}()
+
+	// show settings
+	log.Print("#### iq2pcap ####\n")
 
 	// prepare stdin reader and waitgroup
 	wg := &sync.WaitGroup{}
