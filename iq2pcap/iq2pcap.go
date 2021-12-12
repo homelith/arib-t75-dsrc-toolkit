@@ -33,6 +33,7 @@ import (
 	"flag"
 	"io"
 	"log"
+	"math"
 	"os"
 	"os/signal"
 	"strings"
@@ -65,6 +66,19 @@ func (v *strFlagMulti) String() string {
 func (s *strFlagMulti) Set(v string) error {
 	*s = append(*s, v)
 	return nil
+}
+
+// GCD (greatest common divisor) and LCM (least common multiple)
+func gcd(a int64, b int64) int64 {
+	for b != 0 {
+		t := b
+		b = a % b
+		a = t
+	}
+	return a
+}
+func lcm(a int64, b int64) int64 {
+	return a * b / gcd(a, b)
 }
 
 // read bytes from bufio.Reader and pack into Complex8 c8ChanOut
@@ -157,9 +171,26 @@ func c8Tee(wg *sync.WaitGroup, c8ChanIn chan []Complex8) (c8ChanOutA chan []Comp
 // shifting center frequency of signal by multiplying with specified frequency sinusoid
 func c8Shift(wg *sync.WaitGroup, c8ChanIn chan []Complex8, sampleRate int64, detectRate int64) (c8ChanOut chan []Complex8) {
 	c8ChanOut = make(chan []Complex8, C8CHAN_QUEUE_SIZE)
+
+	// generate sinusoid lookup table
+	absDetectRate := detectRate
+	if absDetectRate < 0 {
+		absDetectRate = -absDetectRate
+	}
+	tableSize := lcm(sampleRate, absDetectRate) / absDetectRate
+	log.Printf("c8shift : sinusoid lookup table size is set to %d", tableSize)
+	sinusoidTable := make([]Complex8, tableSize)
+	for i := int64(0); i < tableSize; i++ {
+		rad := float64(-detectRate) / float64(sampleRate) * 2.0 * math.Pi * float64(i)
+		sinusoidTable[i].i = int8(math.Round(126.0 * math.Cos(rad)))
+		sinusoidTable[i].q = int8(math.Round(126.0 * math.Sin(rad)))
+	}
+
+	// main worker
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+		phase := int64(0)
 		for {
 			in := <-c8ChanIn
 			if len(in) == 0 {
@@ -168,11 +199,20 @@ func c8Shift(wg *sync.WaitGroup, c8ChanIn chan []Complex8, sampleRate int64, det
 				log.Print("c8Shift : received shutdown message\n")
 				return
 			} else {
-				// non-zero length slice include input signals
-				l := len(in)
-				outA := make([]Complex8, l)
-				copy(outA, in)
-				c8ChanOut <- outA
+				// multiply input signal with sinusoid table
+				out := make([]Complex8, len(in))
+				for i := 0; i < len(in); i++ {
+					// complex multiply
+					out[i].i = int8(int16(in[i].i)*int16(sinusoidTable[phase].i) - int16(in[i].q)*int16(sinusoidTable[phase].q))
+					out[i].q = int8(int16(in[i].i)*int16(sinusoidTable[phase].q) + int16(in[i].q)*int16(sinusoidTable[phase].i))
+
+					// phase increment and wrap around
+					phase++
+					if phase == tableSize {
+						phase = 0
+					}
+				}
+				c8ChanOut <- out
 			}
 		}
 	}()
