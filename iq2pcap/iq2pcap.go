@@ -44,16 +44,28 @@ import (
 	"github.com/google/gopacket/pcapgo"
 )
 
-type Complex8 struct {
-	i int8
-	q int8
-}
-
 const (
 	C8_CHUNK_SIZE     = 1024
 	C8CHAN_QUEUE_SIZE = 16
 	SQUARK_INTERVAL   = 10000000
 )
+
+type Complex8 struct {
+	i int8
+	q int8
+}
+
+// custom string flag definition supporting multiple assignment of same flags
+// (e.g. '-d +5M:upper.pcap -d -5M:lower.pcap')
+type strFlagMulti []string
+
+func (v *strFlagMulti) String() string {
+	return strings.Join([]string(*v), " ")
+}
+func (s *strFlagMulti) Set(v string) error {
+	*s = append(*s, v)
+	return nil
+}
 
 // read bytes from bufio.Reader and pack into Complex8 c8ChanOut
 // issue (*os.File).Close() to graceful stop reading and trigger stop message via doneChanOut
@@ -142,6 +154,31 @@ func c8Tee(wg *sync.WaitGroup, c8ChanIn chan []Complex8) (c8ChanOutA chan []Comp
 	return c8ChanOutA, c8ChanOutB
 }
 
+// shifting center frequency of signal by multiplying with specified frequency sinusoid
+func c8Shift(wg *sync.WaitGroup, c8ChanIn chan []Complex8, sampleRate int64, detectRate int64) (c8ChanOut chan []Complex8) {
+	c8ChanOut = make(chan []Complex8, C8CHAN_QUEUE_SIZE)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			in := <-c8ChanIn
+			if len(in) == 0 {
+				// zero length slice means system shutdown
+				c8ChanOut <- []Complex8{}
+				log.Print("c8Shift : received shutdown message\n")
+				return
+			} else {
+				// non-zero length slice include input signals
+				l := len(in)
+				outA := make([]Complex8, l)
+				copy(outA, in)
+				c8ChanOut <- outA
+			}
+		}
+	}()
+	return c8ChanOut
+}
+
 // consume all complex8 channel and do nothing
 func c8Sink(wg *sync.WaitGroup, c8ChanIn chan []Complex8) {
 	wg.Add(1)
@@ -158,19 +195,9 @@ func c8Sink(wg *sync.WaitGroup, c8ChanIn chan []Complex8) {
 	}()
 }
 
-type strFlagMulti []string
-
-func (v *strFlagMulti) String() string {
-	return ""
-}
-
-func (s *strFlagMulti) Set(v string) error {
-	*s = append(*s, v)
-	return nil
-}
-
 func main() {
 	var err error
+	log.Print("#### iq2pcap ####\n")
 
 	// parse args
 	detectorStrAry := strFlagMulti{}
@@ -187,6 +214,9 @@ func main() {
 	log.Printf("main : sampling rate set to %d Hz\n", sampleRate)
 
 	// parse detector params
+	if len(detectorStrAry) == 0 {
+		log.Fatal("main : you must specify at least one '-d' param\n")
+	}
 	type detectorParam struct {
 		detectRate int64
 		handlePcap *os.File
@@ -233,17 +263,19 @@ func main() {
 		}
 	}()
 
-	// show settings
-	log.Print("#### iq2pcap ####\n")
-
 	// prepare stdin reader and waitgroup
 	wg := &sync.WaitGroup{}
 
 	// run worker goroutines
-	eofChan, c8ChanSrc2Tee := c8Source(wg, os.Stdin)
-	c8ChanTee2SinkA, c8ChanTee2SinkB := c8Tee(wg, c8ChanSrc2Tee)
-	c8Sink(wg, c8ChanTee2SinkA)
-	c8Sink(wg, c8ChanTee2SinkB)
+	eofChan, c8ChanTeeThrough := c8Source(wg, os.Stdin)
+	for i := 0; i < len(detectorParamAry)-1; i++ {
+		c8ChanTeeDrop := make(chan []Complex8)
+		c8ChanTeeDrop, c8ChanTeeThrough = c8Tee(wg, c8ChanTeeThrough)
+		c8ChanShift2Sink := c8Shift(wg, c8ChanTeeDrop, sampleRate, detectorParamAry[i].detectRate)
+		c8Sink(wg, c8ChanShift2Sink)
+	}
+	c8ChanShift2Sink := c8Shift(wg, c8ChanTeeThrough, sampleRate, detectorParamAry[len(detectorParamAry)-1].detectRate)
+	c8Sink(wg, c8ChanShift2Sink)
 
 	// wait for interrupt signal
 	sigChan := make(chan os.Signal, 1)
