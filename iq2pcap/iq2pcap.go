@@ -31,7 +31,7 @@ package main
 import (
 	"bufio"
 	"flag"
-	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -54,43 +54,59 @@ type Complex8 struct {
 
 // read bytes from bufio.Reader and pack into Complex8 c8ChanOut
 // Close(reader) to graceful stop reading and trigger stop message via doneChanOut
-func c8Source(wg *sync.WaitGroup, reader *bufio.Reader) (chan struct{}, chan Complex8) {
+func c8Source(wg *sync.WaitGroup, reader *bufio.Reader) (chan struct{}, chan struct{}, chan []Complex8) {
+	doneChanMain := make(chan struct{})
 	doneChanOut := make(chan struct{})
-	c8ChanOut := make(chan Complex8, 4096)
+	c8ChanOut := make(chan []Complex8, 16)
 	wg.Add(1)
 	go func() {
 		phase := 0
 		sample := Complex8{}
 		sampleCount := 0
 		for {
-			b, err := reader.ReadByte()
+			buf := make([]byte, 1024)
+			sampleAry := []Complex8{}
+			n, err := reader.Read(buf)
 			if err != nil {
-				break
+				if err == io.EOF {
+					log.Print("c8Source : input reader reached EOF\n")
+					log.Printf("c8Source : %d samples processed before closing\n", sampleCount)
+					doneChanMain <- struct{}{}
+					doneChanOut <- struct{}{}
+				} else {
+					log.Print("c8Source : input file closed\n")
+					log.Printf("c8Source : %d samples processed before closing\n", sampleCount)
+					doneChanOut <- struct{}{}
+				}
+				wg.Done()
+				return
 			}
-			if phase == 0 {
-				sample.i = int8(b)
-				phase = 1
-			} else {
-				sample.q = int8(b)
-				c8ChanOut <- sample
-				sampleCount++
-				phase = 0
+			for idx := 0; idx < n; idx++ {
+				if phase == 0 {
+					sample.i = int8(buf[idx])
+					phase = 1
+				} else {
+					sample.q = int8(buf[idx])
+					sampleAry = append(sampleAry, sample)
+					sampleCount++
+					phase = 0
+				}
+			}
+			if len(sampleAry) != 0 {
+				c8ChanOut <- sampleAry
 			}
 		}
-		log.Printf("c8Source : %d samples processed before closing\n", sampleCount)
-		doneChanOut <- struct{}{}
-		wg.Done()
 	}()
 
-	return doneChanOut, c8ChanOut
+	return doneChanMain, doneChanOut, c8ChanOut
 }
 
 // duplicate complex8 channel into two
-func c8Tee(wg *sync.WaitGroup, doneChanIn chan struct{}, c8ChanIn chan Complex8) (chan struct{}, chan Complex8, chan struct{}, chan Complex8) {
+func c8Tee(wg *sync.WaitGroup, doneChanIn chan struct{}, c8ChanIn chan []Complex8) (chan struct{}, chan []Complex8, chan struct{}, chan []Complex8) {
 	doneChanOutA := make(chan struct{})
-	c8ChanOutA := make(chan Complex8, 4096)
+	c8ChanOutA := make(chan []Complex8, 16)
 	doneChanOutB := make(chan struct{})
-	c8ChanOutB := make(chan Complex8, 4096)
+	c8ChanOutB := make(chan []Complex8, 16)
 
 	wg.Add(1)
 	go func() {
@@ -114,10 +130,16 @@ func c8Tee(wg *sync.WaitGroup, doneChanIn chan struct{}, c8ChanIn chan Complex8)
 					running = false
 				}
 				break
-			case sample := <-c8ChanIn:
-				c8ChanOutA <- sample
-				c8ChanOutB <- sample
-				sampleCount++
+			case in := <-c8ChanIn:
+				l := len(in)
+				outA := make([]Complex8, l)
+				copy(outA, in)
+				c8ChanOutA <- outA
+				outB := make([]Complex8, l)
+				copy(outB, in)
+				c8ChanOutB <- outB
+				sampleCount += l
+
 				if !running && len(c8ChanIn) == 0 {
 					finalize()
 					return
@@ -129,7 +151,7 @@ func c8Tee(wg *sync.WaitGroup, doneChanIn chan struct{}, c8ChanIn chan Complex8)
 }
 
 // consume all complex8 channel and do nothing
-func c8Sink(wg *sync.WaitGroup, doneChanIn chan struct{}, c8ChanIn chan Complex8) {
+func c8Sink(wg *sync.WaitGroup, doneChanIn chan struct{}, c8ChanIn chan []Complex8) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -150,8 +172,8 @@ func c8Sink(wg *sync.WaitGroup, doneChanIn chan struct{}, c8ChanIn chan Complex8
 					running = false
 				}
 				break
-			case <-c8ChanIn:
-				sampleCount++
+			case in := <-c8ChanIn:
+				sampleCount += len(in)
 				if !running && len(c8ChanIn) == 0 {
 					finalize()
 					return
@@ -169,7 +191,7 @@ func main() {
 	flag.Parse()
 
 	// show settings
-	fmt.Print("#### iq2pcap ####\n")
+	log.Print("#### iq2pcap ####\n")
 
 	// open output pcap if specified
 	var hPcap *os.File
@@ -191,7 +213,7 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 
 	// run worker goroutines
-	doneChanSrc2Tee, c8ChanSrc2Tee := c8Source(wg, reader)
+	doneChanMain, doneChanSrc2Tee, c8ChanSrc2Tee := c8Source(wg, reader)
 	doneChanTee2SinkA, c8ChanTee2SinkA, doneChanTee2SinkB, c8ChanTee2SinkB := c8Tee(wg, doneChanSrc2Tee, c8ChanSrc2Tee)
 	c8Sink(wg, doneChanTee2SinkA, c8ChanTee2SinkA)
 	c8Sink(wg, doneChanTee2SinkB, c8ChanTee2SinkB)
@@ -199,11 +221,17 @@ func main() {
 	// wait for interrupt signal
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	<-sigChan
-	log.Println("main : interrupt signal received")
+	select {
+	case <-sigChan:
+		log.Print("main : interrupt signal received\n")
+		break
+	case <-doneChanMain:
+		log.Print("main : c8Source requested main thread shutdown\n")
+		break
+	}
 
 	// notify stop message to goroutines and wait for join
 	os.Stdin.Close()
 	wg.Wait()
-	log.Println("main : all goroutines stopped, exitting..")
+	log.Print("main : all goroutines stopped\n")
 }
