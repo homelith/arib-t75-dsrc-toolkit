@@ -42,14 +42,9 @@ import (
 	"github.com/google/gopacket/pcapgo"
 )
 
-type MetaData struct {
-	startOfPacket bool
-}
-
 type Complex8 struct {
-	i    int8
-	q    int8
-	meta *MetaData
+	i int8
+	q int8
 }
 
 // read bytes from bufio.Reader and pack into Complex8 c8ChanOut
@@ -64,7 +59,7 @@ func c8Source(wg *sync.WaitGroup, reader *bufio.Reader) (chan struct{}, chan str
 		sample := Complex8{}
 		sampleCount := 0
 		for {
-			buf := make([]byte, 1024)
+			buf := make([]byte, 2048)
 			sampleAry := []Complex8{}
 			n, err := reader.Read(buf)
 			if err != nil {
