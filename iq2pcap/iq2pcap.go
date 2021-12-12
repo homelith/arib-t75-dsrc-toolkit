@@ -31,7 +31,6 @@ package main
 import (
 	"bufio"
 	"flag"
-	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -47,61 +46,78 @@ type Complex8 struct {
 	q int8
 }
 
+const (
+	C8_CHUNK_SIZE     = 1024
+	C8CHAN_QUEUE_SIZE = 16
+	SQUARK_INTERVAL   = 10000000
+)
+
 // read bytes from bufio.Reader and pack into Complex8 c8ChanOut
-// Close(reader) to graceful stop reading and trigger stop message via doneChanOut
-func c8Source(wg *sync.WaitGroup, reader *bufio.Reader) (chan struct{}, chan struct{}, chan []Complex8) {
+// issue (*os.File).Close() to graceful stop reading and trigger stop message via doneChanOut
+// if reader reach EOF, this module trigger stop message both doneChanMain and doneChanOut
+func c8Source(wg *sync.WaitGroup, f *os.File) (chan struct{}, chan struct{}, chan []Complex8) {
 	doneChanMain := make(chan struct{})
 	doneChanOut := make(chan struct{})
-	c8ChanOut := make(chan []Complex8, 16)
+	c8ChanOut := make(chan []Complex8, C8CHAN_QUEUE_SIZE)
+	reader := bufio.NewReaderSize(f, C8_CHUNK_SIZE*16)
 	wg.Add(1)
 	go func() {
 		phase := 0
 		sample := Complex8{}
-		sampleCount := 0
+		count := 0
 		for {
-			buf := make([]byte, 2048)
-			sampleAry := []Complex8{}
+			chunk := []Complex8{}
+
+			// read input up to sizeof(struct Complex8) * C8_CHUNK_SIZE
+			buf := make([]byte, C8_CHUNK_SIZE*2)
 			n, err := reader.Read(buf)
 			if err != nil {
-				if err == io.EOF {
-					log.Print("c8Source : input reader reached EOF\n")
-					log.Printf("c8Source : %d samples processed before closing\n", sampleCount)
-					doneChanMain <- struct{}{}
-					doneChanOut <- struct{}{}
-				} else {
+				log.Printf("%v\n", err)
+				log.Printf("%d\n", err)
+				if err == os.ErrClosed {
 					log.Print("c8Source : input file closed\n")
-					log.Printf("c8Source : %d samples processed before closing\n", sampleCount)
-					doneChanOut <- struct{}{}
+					log.Printf("c8Source : %d samples processed before closing\n", count)
+				} else {
+					log.Print("c8Source : input reader reached EOF or encountered some i/o error\n")
+					log.Printf("c8Source : %d samples processed before closing\n", count)
+					doneChanMain <- struct{}{}
 				}
+				doneChanOut <- struct{}{}
 				wg.Done()
 				return
 			}
+
+			// repack bytes into Complex8 struct array
 			for idx := 0; idx < n; idx++ {
 				if phase == 0 {
 					sample.i = int8(buf[idx])
 					phase = 1
 				} else {
 					sample.q = int8(buf[idx])
-					sampleAry = append(sampleAry, sample)
-					sampleCount++
+					chunk = append(chunk, sample)
+					count++
+					if count%SQUARK_INTERVAL == 0 {
+						log.Printf("c8Source : %d samples processed\n", count)
+					}
 					phase = 0
 				}
 			}
-			if len(sampleAry) != 0 {
-				c8ChanOut <- sampleAry
+
+			// send array to channel
+			if len(chunk) != 0 {
+				c8ChanOut <- chunk
 			}
 		}
 	}()
-
 	return doneChanMain, doneChanOut, c8ChanOut
 }
 
 // duplicate complex8 channel into two
 func c8Tee(wg *sync.WaitGroup, doneChanIn chan struct{}, c8ChanIn chan []Complex8) (chan struct{}, chan []Complex8, chan struct{}, chan []Complex8) {
 	doneChanOutA := make(chan struct{})
-	c8ChanOutA := make(chan []Complex8, 16)
+	c8ChanOutA := make(chan []Complex8, C8CHAN_QUEUE_SIZE)
 	doneChanOutB := make(chan struct{})
-	c8ChanOutB := make(chan []Complex8, 16)
+	c8ChanOutB := make(chan []Complex8, C8CHAN_QUEUE_SIZE)
 
 	wg.Add(1)
 	go func() {
@@ -205,10 +221,9 @@ func main() {
 
 	// prepare stdin reader and waitgroup
 	wg := &sync.WaitGroup{}
-	reader := bufio.NewReader(os.Stdin)
 
 	// run worker goroutines
-	doneChanMain, doneChanSrc2Tee, c8ChanSrc2Tee := c8Source(wg, reader)
+	doneChanMain, doneChanSrc2Tee, c8ChanSrc2Tee := c8Source(wg, os.Stdin)
 	doneChanTee2SinkA, c8ChanTee2SinkA, doneChanTee2SinkB, c8ChanTee2SinkB := c8Tee(wg, doneChanSrc2Tee, c8ChanSrc2Tee)
 	c8Sink(wg, doneChanTee2SinkA, c8ChanTee2SinkA)
 	c8Sink(wg, doneChanTee2SinkB, c8ChanTee2SinkB)
