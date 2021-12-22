@@ -221,7 +221,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>20000000</value>
+      <value>15000000</value>
     </param>
   </block>
   <block>
@@ -249,100 +249,6 @@
     <param>
       <key>value</key>
       <value>0.1</value>
-    </param>
-  </block>
-  <block>
-    <key>analog_feedforward_agc_cc</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(752, 284)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>analog_feedforward_agc_cc_0</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>num_samples</key>
-      <value>100</value>
-    </param>
-    <param>
-      <key>reference</key>
-      <value>0.8</value>
-    </param>
-  </block>
-  <block>
-    <key>analog_feedforward_agc_cc</key>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>comment</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(752, 428)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>id</key>
-      <value>analog_feedforward_agc_cc_1</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>num_samples</key>
-      <value>100</value>
-    </param>
-    <param>
-      <key>reference</key>
-      <value>0.8</value>
     </param>
   </block>
   <block>
@@ -745,7 +651,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(912, 156)</value>
+      <value>(936, 180)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -765,11 +671,11 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     </param>
     <param>
       <key>sample_rate</key>
-      <value>20000000</value>
+      <value>15000000</value>
     </param>
     <param>
       <key>ticks_per_symbol</key>
-      <value>19.5</value>
+      <value>14.5</value>
     </param>
     <param>
       <key>tps_deviation</key>
@@ -1054,7 +960,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(912, 460)</value>
+      <value>(936, 460)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1074,11 +980,11 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     </param>
     <param>
       <key>sample_rate</key>
-      <value>20000000</value>
+      <value>15000000</value>
     </param>
     <param>
       <key>ticks_per_symbol</key>
-      <value>19.5</value>
+      <value>14.5</value>
     </param>
     <param>
       <key>tps_deviation</key>
@@ -1109,7 +1015,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(760, 208)</value>
+      <value>(752, 328)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1152,7 +1058,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(760, 512)</value>
+      <value>(752, 424)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1254,11 +1160,11 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     </param>
     <param>
       <key>file</key>
-      <value>C:\Users\user\Desktop\rawdata_out.bin</value>
+      <value>C:\work\output.bin</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1176, 316)</value>
+      <value>(1216, 316)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1305,7 +1211,7 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     </param>
     <param>
       <key>file</key>
-      <value>C:\work\rawdata_in.bin</value>
+      <value>C:\work\input.bin</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -1556,11 +1462,11 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1192, 584)</value>
+      <value>(1216, 592)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1603,11 +1509,11 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1192, 128)</value>
+      <value>(1216, 160)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1734,6 +1640,212 @@ class blk(gr.sync_block):  # other base classes are basic_block, decim_block, in
     <param>
       <key>vlen</key>
       <value>1</value>
+    </param>
+  </block>
+  <block>
+    <key>epy_block</key>
+    <param>
+      <key>backward_samples</key>
+      <value>100</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_io_cache</key>
+      <value>('FF and FB AGC', 'blk', [('forward_samples', '100'), ('backward_samples', '100'), ('reference', '0.8')], [('0', 'float', 1)], [('0', 'float', 1)], '', ['backward_samples', 'forward_samples', 'reference'])</value>
+    </param>
+    <param>
+      <key>_source_code</key>
+      <value>#-------------------------------------------------------------------------------
+# ff_and_fb_agc.py
+#   feed-forward and feed-back hybrid AGC
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# MIT License
+#
+# Copyright (c) 2021 homelith
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#-------------------------------------------------------------------------------
+
+import numpy as np
+from gnuradio import gr
+
+class blk(gr.sync_block):  # other base classes are basic_block, decim_block, interp_block
+
+    def __init__(self, forward_samples=100, backward_samples=100, reference=0.8):
+        gr.sync_block.__init__(
+            self,
+            name='FF and FB AGC',
+            in_sig=[np.float32],
+            out_sig=[np.float32]
+        )
+        self.forward_samples = forward_samples
+        self.backward_samples = backward_samples
+        self.reference = reference
+        self.delay_buffer = [0.0] * (forward_samples + backward_samples + 1)
+
+    def work(self, input_items, output_items):
+	oval_array = []
+        for ival in input_items[0]:
+            self.delay_buffer.append(ival)
+            self.delay_buffer = self.delay_buffer[1:]
+            gain = self.reference / max(self.delay_buffer)
+            oval = self.delay_buffer[self.backward_samples] * gain
+            oval_array.append(oval)
+        output_items[0][:] = oval_array
+        return len(output_items[0])
+</value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>forward_samples</key>
+      <value>100</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(760, 212)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>ff_and_fb_agc_0</value>
+    </param>
+    <param>
+      <key>reference</key>
+      <value>0.8</value>
+    </param>
+  </block>
+  <block>
+    <key>epy_block</key>
+    <param>
+      <key>backward_samples</key>
+      <value>100</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_io_cache</key>
+      <value>('FF and FB AGC', 'blk', [('forward_samples', '100'), ('backward_samples', '100'), ('reference', '0.8')], [('0', 'float', 1)], [('0', 'float', 1)], '', ['backward_samples', 'forward_samples', 'reference'])</value>
+    </param>
+    <param>
+      <key>_source_code</key>
+      <value>#-------------------------------------------------------------------------------
+# ff_and_fb_agc.py
+#   feed-forward and feed-back hybrid AGC
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# MIT License
+#
+# Copyright (c) 2021 homelith
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#-------------------------------------------------------------------------------
+
+import numpy as np
+from gnuradio import gr
+
+class blk(gr.sync_block):  # other base classes are basic_block, decim_block, interp_block
+
+    def __init__(self, forward_samples=100, backward_samples=100, reference=0.8):
+        gr.sync_block.__init__(
+            self,
+            name='FF and FB AGC',
+            in_sig=[np.float32],
+            out_sig=[np.float32]
+        )
+        self.forward_samples = forward_samples
+        self.backward_samples = backward_samples
+        self.reference = reference
+        self.delay_buffer = [0.0] * (forward_samples + backward_samples + 1)
+
+    def work(self, input_items, output_items):
+	oval_array = []
+        for ival in input_items[0]:
+            self.delay_buffer.append(ival)
+            self.delay_buffer = self.delay_buffer[1:]
+            gain = self.reference / max(self.delay_buffer)
+            oval = self.delay_buffer[self.backward_samples] * gain
+            oval_array.append(oval)
+        output_items[0][:] = oval_array
+        return len(output_items[0])
+</value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>forward_samples</key>
+      <value>100</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(760, 492)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>ff_and_fb_agc_1</value>
+    </param>
+    <param>
+      <key>reference</key>
+      <value>0.8</value>
     </param>
   </block>
   <block>
@@ -3589,7 +3701,7 @@ class blk(gr.sync_block):
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1200, 396)</value>
+      <value>(1224, 396)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3601,7 +3713,7 @@ class blk(gr.sync_block):
     </param>
     <param>
       <key>squawk_interval</key>
-      <value>samp_rate/20</value>
+      <value>1000000</value>
     </param>
   </block>
   <block>
@@ -3932,7 +4044,7 @@ class blk(gr.sync_block):
     </param>
     <param>
       <key>tr_level</key>
-      <value>0.2</value>
+      <value>0.1</value>
     </param>
     <param>
       <key>tr_mode</key>
@@ -4007,7 +4119,7 @@ class blk(gr.sync_block):
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1192, 180)</value>
+      <value>(1216, 204)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -4299,7 +4411,7 @@ class blk(gr.sync_block):
     </param>
     <param>
       <key>tr_level</key>
-      <value>0.4</value>
+      <value>0</value>
     </param>
     <param>
       <key>tr_mode</key>
@@ -4374,7 +4486,7 @@ class blk(gr.sync_block):
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(752, 556)</value>
+      <value>(752, 580)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -4666,7 +4778,7 @@ class blk(gr.sync_block):
     </param>
     <param>
       <key>tr_level</key>
-      <value>0.2</value>
+      <value>0.1</value>
     </param>
     <param>
       <key>tr_mode</key>
@@ -4741,7 +4853,7 @@ class blk(gr.sync_block):
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1192, 484)</value>
+      <value>(1216, 484)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -5033,7 +5145,7 @@ class blk(gr.sync_block):
     </param>
     <param>
       <key>tr_level</key>
-      <value>0.4</value>
+      <value>0</value>
     </param>
     <param>
       <key>tr_mode</key>
@@ -5073,18 +5185,6 @@ class blk(gr.sync_block):
     </param>
   </block>
   <connection>
-    <source_block_id>analog_feedforward_agc_cc_0</source_block_id>
-    <sink_block_id>blocks_complex_to_mag_0</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>analog_feedforward_agc_cc_1</source_block_id>
-    <sink_block_id>blocks_complex_to_mag_1</sink_block_id>
-    <source_key>0</source_key>
-    <sink_key>0</sink_key>
-  </connection>
-  <connection>
     <source_block_id>analog_sig_source_x_0</source_block_id>
     <sink_block_id>blocks_multiply_xx_0</sink_block_id>
     <source_key>0</source_key>
@@ -5122,13 +5222,13 @@ class blk(gr.sync_block):
   </connection>
   <connection>
     <source_block_id>blocks_complex_to_mag_0</source_block_id>
-    <sink_block_id>ask_dec_0</sink_block_id>
+    <sink_block_id>ff_and_fb_agc_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
   <connection>
     <source_block_id>blocks_complex_to_mag_1</source_block_id>
-    <sink_block_id>ask_dec_1</sink_block_id>
+    <sink_block_id>ff_and_fb_agc_1</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -5205,8 +5305,20 @@ class blk(gr.sync_block):
     <sink_key>0</sink_key>
   </connection>
   <connection>
+    <source_block_id>ff_and_fb_agc_0</source_block_id>
+    <sink_block_id>ask_dec_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>ff_and_fb_agc_1</source_block_id>
+    <sink_block_id>ask_dec_1</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
     <source_block_id>low_pass_filter_0</source_block_id>
-    <sink_block_id>analog_feedforward_agc_cc_0</sink_block_id>
+    <sink_block_id>blocks_complex_to_mag_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
@@ -5218,7 +5330,7 @@ class blk(gr.sync_block):
   </connection>
   <connection>
     <source_block_id>low_pass_filter_1</source_block_id>
-    <sink_block_id>analog_feedforward_agc_cc_1</sink_block_id>
+    <sink_block_id>blocks_complex_to_mag_1</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
   </connection>
