@@ -14,7 +14,7 @@ default : run
 run : $(TARGET)
 	@if [ ! -e "downlink.pcap" ] ; then echo "error : downlink.pcap not found" ; exit 1 ; fi
 	@if [ ! -e "uplink.pcap" ] ; then echo "error : uplink.pcap not found" ; exit 1 ; fi
-	./$(MERGE_TGT) -o 0 downlink.pcap uplink.pcap output.pcap
+	./$(TARGET) -o 0 downlink.pcap uplink.pcap output.pcap
 
 $(TARGET) : $(SRCS)
 	go mod tidy
